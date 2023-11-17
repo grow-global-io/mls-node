@@ -4,7 +4,7 @@ const {successResponse, errorResponse} = require("./responses");
 const authRoute = require("./routes/auth");
 const agentRoute = require("./routes/agent");
 const developerRoute = require("./routes/developer");
-const imageRoute = require("./routes/image");
+// const imageRoute = require("./routes/image");
 const listingRoute = require("./routes/listings");
 const propertyRoute = require("./routes/properties");
 
@@ -21,7 +21,7 @@ app.get('/userDetails',getUserInfoMiddleware ,(req, res) => {
 app.use('/auth',authRoute);
 app.use('/agent',agentRoute);
 app.use('/developer',developerRoute);
-app.use('/image',imageRoute);
+// app.use('/image',imageRoute);
 app.use('/listing',listingRoute);
 app.use('/property',propertyRoute);
 
