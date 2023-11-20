@@ -18,11 +18,11 @@ app.get('/verify',verifyToken ,(req, res) => {
 app.get('/userDetails',getUserInfoMiddleware ,(req, res) => {
   successResponse(res, req.user, "success")
 });
-app.use('/auth',authRoute);
-app.use('/agent',agentRoute);
-app.use('/developer',developerRoute);
+app.use('/auth',verifyToken,authRoute);
+app.use('/agent',verifyToken,agentRoute);
+app.use('/developer',verifyToken,developerRoute);
 // app.use('/image',imageRoute);
-app.use('/listing',listingRoute);
-app.use('/property',propertyRoute);
+app.use('/listing',verifyToken,listingRoute);
+app.use('/property',verifyToken,propertyRoute);
 
 app.listen(8000, () => console.log('Server listening on port 8000!'));
