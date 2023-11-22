@@ -1,13 +1,16 @@
-const app = require("express")();
+const express = require('express');
+const app = express();
 const {getUserInfoMiddleware,verifyToken} = require("./Middleware");
 const {successResponse, errorResponse} = require("./responses");
 const authRoute = require("./routes/auth");
 const agentRoute = require("./routes/agent");
 const developerRoute = require("./routes/developer");
-// const imageRoute = require("./routes/image");
+const imageRoute = require("./routes/image");
 const listingRoute = require("./routes/listings");
 const propertyRoute = require("./routes/properties");
-
+const swaggerUi = require('swagger-ui-express');
+const swaggerJSDoc = require('swagger-jsdoc');
+app.use(express.json());
 app.get('/callback', (req, res) => {
   res.send("hello")
 });
@@ -21,8 +24,25 @@ app.get('/userDetails',getUserInfoMiddleware ,(req, res) => {
 app.use('/auth',verifyToken,authRoute);
 app.use('/agent',verifyToken,agentRoute);
 app.use('/developer',verifyToken,developerRoute);
-// app.use('/image',imageRoute);
+app.use('/image',imageRoute);
 app.use('/listing',verifyToken,listingRoute);
 app.use('/property',verifyToken,propertyRoute);
+const options = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Property API',
+      version: '1.0.0',
+    },
+    servers:[
+      {
+        url:"http://localhost:8000"
+      }
+    ]
+  },
+  apis: ['./routes/*.js'],
+}
+const swaggerSpec = swaggerJSDoc(options);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.listen(8000, () => console.log('Server listening on port 8000!'));
