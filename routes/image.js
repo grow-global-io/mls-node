@@ -2,13 +2,10 @@ const { BlobServiceClient, StorageSharedKeyCredential } = require("@azure/storag
 const multer = require("multer");
 const express = require("express");
 const app = express.Router();
-// env config
+// require("dotenv").config();
 require("dotenv").config();
-
-const { AZURE_STORAGE_CONNECTION_STRING } = process.env;
-
 // Initialize Azure Storage
-const blobServiceClient = BlobServiceClient.fromConnectionString(AZURE_STORAGE_CONNECTION_STRING);
+const blobServiceClient = BlobServiceClient.fromConnectionString(process.env.AZURE_STORAGE_CONNECTION_STRING);
 const containerName = "image";
 const containerClient = blobServiceClient.getContainerClient(containerName);
 
@@ -22,9 +19,10 @@ const upload = multer({ storage: storage });
 app.post("/upload", upload.single("image"), async (req, res) => {
   if (!req.file) {
     return res.status(400).send("No file uploaded.");
-  }
+  } 
+  
 
-  const blobName = `image_${Date.now()}.jpg`; // You can use a more sophisticated naming convention
+  const blobName = `image_${Date.now()}${req.file.originalname}`; // You can use a more sophisticated naming convention
   const blobClient = containerClient.getBlockBlobClient(blobName);
   const fileBuffer = req.file.buffer;
   await blobClient.upload(fileBuffer, fileBuffer.length);
