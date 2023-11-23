@@ -9,7 +9,7 @@ const client = new CosmosClient({ endpoint, key });
 
 // Cosmos DB configuration
 const databaseId = process.env.database_id;
-const containerId = 'listings';
+const containerId = 'requirements';
 
 // Function to create an item in Cosmos DB
 router.post('/create', async (req, res) => {
