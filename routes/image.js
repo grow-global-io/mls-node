@@ -5,7 +5,7 @@ const app = express.Router();
 // require("dotenv").config();
 require("dotenv").config();
 // Initialize Azure Storage
-const blobServiceClient = BlobServiceClient.fromConnectionString(process.env.AZURE_STORAGE_CONNECTION_STRING);
+const blobServiceClient = BlobServiceClient.fromConnectionString("DefaultEndpointsProtocol=https;AccountName=ahmls2;AccountKey=vPJBBIeTtGhVAasQ/3+YE6asl/aS9RDVn9mRbLIqTKZb80mbwJo4ed0lXrqsfS+UP9BUhmWfPYBZ+ASt3Bi1lQ==;EndpointSuffix=core.windows.net");
 const containerName = "image";
 const containerClient = blobServiceClient.getContainerClient(containerName);
 
