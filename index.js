@@ -27,6 +27,7 @@ app.use('/developer',developerRoute);
 app.use('/image',imageRoute);
 app.use('/listing',listingRoute);
 app.use('/property',propertyRoute);
+app.use('/requirement',propertyRoute);
 const options = {
   definition: {
     openapi: '3.0.0',
