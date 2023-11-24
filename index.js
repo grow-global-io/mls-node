@@ -26,7 +26,26 @@ app.use('/developer',developerRoute);
 app.use('/image',imageRoute);
 app.use('/listing',listingRoute);
 app.use('/property',propertyRoute);
-app.use('/requirement',propertyRoute);
+app.use('/requirement',requirementRoute);
 app.use('/matching',matchingRoute);
-
+const requirementRoute = require("./routes/requirements");
+const swaggerUi = require('swagger-ui-express');
+const swaggerJSDoc = require('swagger-jsdoc');
+const options = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Property API',
+      version: '1.0.0',
+    },
+    servers:[
+      {
+        url:"http://localhost:8000"
+      }
+    ]
+  },
+  apis: ['./routes/*.js'],
+}
+const swaggerSpec = swaggerJSDoc(options);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.listen(8000, () => console.log('Server listening on port 8000!'));
