@@ -60,16 +60,9 @@ Router.post('/filterData', async (req, res) => {
         const filteredData = allData.filter(data => {
             const dataLat = data.lat ?? 0; // Replace with your data's latitude field
             const dataLong = data.long ?? 0; // Replace with your data's longitude field
-            const dataId = data.id; // Replace with your data's id field
-            const dataPropertyName = data.propertyName; // Replace with your data's propertyName field
-            const dataUserType = data.userType; // Replace with your data's propertyName field
             const dataBeds = data.beds; // Replace with your data's propertyName field
             const dataBaths = data.baths; // Replace with your data's propertyName field
-            const dataReception = data.reception; // Replace with your data's propertyName field
-            const dataSize = data.size; // Replace with your data's propertyName field
-            const dataAskingPrice = data.askingPrice; // Replace with your data's propertyName field
-            const dataReferralFeeType = data.referralFeeType; // Replace with your data's propertyName field
-            const dataReferralFee = data.referralFee; // Replace with your data's propertyName field
+
 
 
             // Calculate distance using the Haversine formula
@@ -78,22 +71,41 @@ Router.post('/filterData', async (req, res) => {
             // Check id and propertyName along with proximity
             // return distance <= 100 || dataId === id || dataPropertyName === propertyName || dataUserType === userType || dataBeds === beds || dataBaths === baths || dataReception === reception || dataSize === size || dataAskingPrice === askingPrice || dataReferralFeeType === referralFeeType || dataReferralFee === referralFee;
             ;
+            console.log(beds && dataBeds && dataBeds === beds)
             return (
-                distance <= 100 ||
+                distance <= 100 &&
+                (beds && dataBeds && dataBeds === beds) &&
+                (baths && dataBaths && dataBaths === baths)
+            );
+            // Adjust conditions as needed for your scenario
+        });
+        filteredData.filter((data) => {
+            const dataId = data.id; // Replace with your data's id field
+            const dataPropertyName = data.propertyName; // Replace with your data's propertyName field
+            const dataUserType = data.userType; // Replace with your data's propertyName field
+            const dataReception = data.reception; // Replace with your data's propertyName field
+            const dataSize = data.size; // Replace with your data's propertyName field
+            const dataAskingPrice = data.askingPrice; // Replace with your data's propertyName field
+            const dataReferralFeeType = data.referralFeeType; // Replace with your data's propertyName field
+            const dataReferralFee = data.referralFee; // Replace with your data's propertyName field
+            return (
                 dataId === id ||
                 dataPropertyName === propertyName ||
+                dataUserType === userType ||
+                dataReception === reception ||
+                dataSize === size ||
+                dataAskingPrice === askingPrice ||
+                dataReferralFeeType === referralFeeType ||
+                dataReferralFee === referralFee ||
                 (propertyName && dataPropertyName && dataPropertyName.includes(propertyName)) ||
                 (userType && dataUserType && dataUserType.includes(userType)) ||
-                (beds && dataBeds && dataBeds === beds) ||
-                (baths && dataBaths && dataBaths === baths) ||
                 (reception && dataReception && dataReception === reception) ||
                 (size && dataSize && dataSize.includes(size)) ||
                 (askingPrice && dataAskingPrice && dataAskingPrice.includes(askingPrice)) ||
                 (referralFeeType && dataReferralFeeType && dataReferralFeeType.includes(referralFeeType)) ||
                 (referralFee && dataReferralFee && dataReferralFee.includes(referralFee))
             );
-            // Adjust conditions as needed for your scenario
-        });
+        })
         filteredData.sort((a, b) => {
             const scoreA = calculateSimilarityScore(a, req.body);
             const scoreB = calculateSimilarityScore(b, req.body);
