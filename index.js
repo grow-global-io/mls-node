@@ -8,6 +8,7 @@ const developerRoute = require("./routes/developer");
 const imageRoute = require("./routes/image");
 const listingRoute = require("./routes/listings");
 const propertyRoute = require("./routes/properties");
+const requirementRoute = require("./routes/requirements");
 const swaggerUi = require('swagger-ui-express');
 const swaggerJSDoc = require('swagger-jsdoc');
 app.use(express.json());
@@ -27,7 +28,7 @@ app.use('/developer',developerRoute);
 app.use('/image',imageRoute);
 app.use('/listing',listingRoute);
 app.use('/property',propertyRoute);
-app.use('/requirement',propertyRoute);
+app.use('/requirement',requirementRoute);
 const options = {
   definition: {
     openapi: '3.0.0',
