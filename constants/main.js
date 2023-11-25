@@ -12,5 +12,24 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
     const distance = R * c; // Distance in kilometers
     return distance;
 }
+const calculateSimilarityScore = (data, filters) => {
+    let score = 0;
 
-module.exports = {calculateDistance};
+    // Check each criteria for a match and increment the score accordingly
+    if (data.id === filters.id) {
+        score++;
+    }
+    if (data.propertyName === filters.propertyName) {
+        score++;
+    }
+    if (data.userType === filters.userType) {
+        score++;
+    }
+    // Add similar checks for other criteria...
+
+    return score;
+};
+
+
+
+module.exports = { calculateDistance, calculateSimilarityScore };

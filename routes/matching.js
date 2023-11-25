@@ -4,7 +4,7 @@ const { successResponse, errorResponse } = require("../responses");
 const { verifyToken } = require("../Middleware");
 const { CosmosClient } = require('@azure/cosmos');
 require("dotenv").config();
-const { calculateDistance } = require('../constants/main');
+const { calculateDistance, calculateSimilarityScore } = require('../constants/main');
 
 // Cosmos DB setup
 const endpoint = process.env.endpoint;
@@ -52,7 +52,7 @@ Router.post('/filterData', async (req, res) => {
         const containerId = 'listings';
         const database = client.database(databaseId);
         const container = database.container(containerId);
-        const { lat, long, id, propertyName,userType,beds,baths,reception,size,askingPrice,referralFeeType,referralFee } = req.body;
+        const { lat, long, id, propertyName, userType, beds, baths, reception, size, askingPrice, referralFeeType, referralFee } = req.body;
 
         // Fetch all data from the Cosmos DB container
         const { resources: allData } = await container.items.readAll().fetchAll();
@@ -60,26 +60,57 @@ Router.post('/filterData', async (req, res) => {
         const filteredData = allData.filter(data => {
             const dataLat = data.lat ?? 0; // Replace with your data's latitude field
             const dataLong = data.long ?? 0; // Replace with your data's longitude field
+            const dataBeds = data.beds; // Replace with your data's propertyName field
+            const dataBaths = data.baths; // Replace with your data's propertyName field
+
+
+
+            // Calculate distance using the Haversine formula
+            const distance = calculateDistance(lat, long, dataLat, dataLong);
+            // Filter data within a certain radius (example: 100 kilometers)
+            // Check id and propertyName along with proximity
+            // return distance <= 100 || dataId === id || dataPropertyName === propertyName || dataUserType === userType || dataBeds === beds || dataBaths === baths || dataReception === reception || dataSize === size || dataAskingPrice === askingPrice || dataReferralFeeType === referralFeeType || dataReferralFee === referralFee;
+            ;
+            console.log(beds && dataBeds && dataBeds === beds)
+            return (
+                distance <= 100 &&
+                (beds && dataBeds && dataBeds === beds) &&
+                (baths && dataBaths && dataBaths === baths)
+            );
+            // Adjust conditions as needed for your scenario
+        });
+        filteredData.filter((data) => {
             const dataId = data.id; // Replace with your data's id field
             const dataPropertyName = data.propertyName; // Replace with your data's propertyName field
             const dataUserType = data.userType; // Replace with your data's propertyName field
-            const dataBeds = data.beds; // Replace with your data's propertyName field
-            const dataBaths = data.baths; // Replace with your data's propertyName field
             const dataReception = data.reception; // Replace with your data's propertyName field
             const dataSize = data.size; // Replace with your data's propertyName field
             const dataAskingPrice = data.askingPrice; // Replace with your data's propertyName field
             const dataReferralFeeType = data.referralFeeType; // Replace with your data's propertyName field
             const dataReferralFee = data.referralFee; // Replace with your data's propertyName field
-
-
-            // Calculate distance using the Haversine formula
-            const distance = calculateDistance(lat, long, dataLat, dataLong);
-            console.log(distance);
-            // Filter data within a certain radius (example: 100 kilometers)
-            // Check id and propertyName along with proximity
-            return distance <= 100 || dataId === id || dataPropertyName === propertyName || dataUserType === userType || dataBeds === beds || dataBaths === baths || dataReception === reception || dataSize === size || dataAskingPrice === askingPrice || dataReferralFeeType === referralFeeType || dataReferralFee === referralFee;
-            // Adjust conditions as needed for your scenario
-        });
+            return (
+                dataId === id ||
+                dataPropertyName === propertyName ||
+                dataUserType === userType ||
+                dataReception === reception ||
+                dataSize === size ||
+                dataAskingPrice === askingPrice ||
+                dataReferralFeeType === referralFeeType ||
+                dataReferralFee === referralFee ||
+                (propertyName && dataPropertyName && dataPropertyName.includes(propertyName)) ||
+                (userType && dataUserType && dataUserType.includes(userType)) ||
+                (reception && dataReception && dataReception === reception) ||
+                (size && dataSize && dataSize.includes(size)) ||
+                (askingPrice && dataAskingPrice && dataAskingPrice.includes(askingPrice)) ||
+                (referralFeeType && dataReferralFeeType && dataReferralFeeType.includes(referralFeeType)) ||
+                (referralFee && dataReferralFee && dataReferralFee.includes(referralFee))
+            );
+        })
+        filteredData.sort((a, b) => {
+            const scoreA = calculateSimilarityScore(a, req.body);
+            const scoreB = calculateSimilarityScore(b, req.body);
+            return scoreB - scoreA; // Sort in descending order of similarity score
+        })
         res.json(filteredData);
 
     } catch (error) {
