@@ -15,26 +15,26 @@ router.get("/get-data/:id", async (req, res) => {
     try {
         const database = client.database(databaseId);
         const container = database.container(containerId);
-      const propId = req.params.id;
-  
-      // Query Cosmos DB to retrieve the specific post by ID
-      const querySpec = {
-        query: 'SELECT * FROM c WHERE c.id = @propId',
-        parameters: [{ name: '@propId', value: propId }]
-      };
-  
-      const { resources: data } = await container.items.query(querySpec).fetchAll();
-  
-      if (data.length === 1) {
-        return res.status(200).json(data[0]);
-      } else {
-        return res.status(404).json({ message: 'Post not found' });
-      }
+        const propId = req.params.id;
+
+        // Query Cosmos DB to retrieve the specific post by ID
+        const querySpec = {
+            query: 'SELECT * FROM c WHERE c.id = @propId',
+            parameters: [{ name: '@propId', value: propId }]
+        };
+
+        const { resources: data } = await container.items.query(querySpec).fetchAll();
+
+        if (data.length === 1) {
+            return res.status(200).json(data[0]);
+        } else {
+            return res.status(404).json({ message: 'Post not found' });
+        }
     } catch (error) {
-      console.error('Error retrieving post:', error);
-      return res.status(500).send('An error occurred while retrieving the post.');
+        console.error('Error retrieving post:', error);
+        return res.status(500).send('An error occurred while retrieving the post.');
     }
-  })
+})
 
 // Function to create an item in Cosmos DB
 router.post('/create', async (req, res) => {
@@ -58,7 +58,10 @@ router.get('/read', async (req, res) => {
         const container = database.container(containerId);
 
         const { resources: items } = await container.items.readAll().fetchAll();
-
+        let sortOrder = { Featured: 1, Premium: 2, Standard: 3 };
+        items.sort((a, b) => {
+            return sortOrder[a.listingType] - sortOrder[b.listingType];
+        });
         res.json(items);
     } catch (error) {
         res.status(500).send(error);
