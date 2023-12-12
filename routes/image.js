@@ -5,7 +5,7 @@ const app = express.Router();
 // require("dotenv").config();
 require("dotenv").config();
 // Initialize Azure Storage
-const blobServiceClient = BlobServiceClient.fromConnectionString("DefaultEndpointsProtocol=https;AccountName=ahmls2;AccountKey=vPJBBIeTtGhVAasQ/3+YE6asl/aS9RDVn9mRbLIqTKZb80mbwJo4ed0lXrqsfS+UP9BUhmWfPYBZ+ASt3Bi1lQ==;EndpointSuffix=core.windows.net");
+const blobServiceClient = BlobServiceClient.fromConnectionString(process.env.AZURE_STORAGE_CONNECTION_STRING);
 const containerName = "image";
 const containerClient = blobServiceClient.getContainerClient(containerName);
 
@@ -19,8 +19,8 @@ const upload = multer({ storage: storage });
 app.post("/upload", upload.single("image"), async (req, res) => {
   if (!req.file) {
     return res.status(400).send("No file uploaded.");
-  } 
-  
+  }
+
 
   const blobName = `image_${Date.now()}${req.file.originalname}`; // You can use a more sophisticated naming convention
   const blobClient = containerClient.getBlockBlobClient(blobName);
