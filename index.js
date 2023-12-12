@@ -12,6 +12,7 @@ const matchingRoute = require("./routes/matching");
 const requirementRoute = require("./routes/requirements");
 const authenticateRoute = require("./routes/authentication");
 const userRoute = require("./routes/user");
+const pdfRoute = require("./routes/pdf");
 
 // dotenv confi
 require("dotenv").config();
@@ -30,6 +31,7 @@ app.use("/auth", verifyToken, authRoute);
 app.use("/agent", verifyToken, agentRoute);
 app.use("/developer", verifyToken, developerRoute);
 app.use("/image", verifyToken, imageRoute);
+app.use("/pdf", verifyToken, pdfRoute);
 app.use("/listing", verifyToken, listingRoute);
 app.use("/property", verifyToken, propertyRoute);
 app.use("/requirement", verifyToken, requirementRoute);
