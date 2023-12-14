@@ -11,6 +11,7 @@ const propertyRoute = require("./routes/properties");
 const matchingRoute = require("./routes/matching");
 const requirementRoute = require("./routes/requirements");
 const authenticateRoute = require("./routes/authentication");
+const profile = require("./routes/profile");
 const userRoute = require("./routes/user");
 const pdfRoute = require("./routes/pdf");
 
@@ -37,5 +38,6 @@ app.use("/property", verifyToken, propertyRoute);
 app.use("/requirement", verifyToken, requirementRoute);
 app.use("/matching", verifyToken, matchingRoute);
 app.use('/authenticate', getManagementApiToken, authenticateRoute)
+app.use('/profile', verifyToken, profile)
 app.use('/user', userRoute)
 app.listen(8000, () => console.log("Server listening on port 8000!"));
