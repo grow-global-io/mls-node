@@ -9,7 +9,7 @@ const client = new CosmosClient({ endpoint, key });
 
 // Cosmos DB configuration
 const databaseId = process.env.database_id;
-const containerId = 'profile';
+const containerId = 'agent';
 
 // Function to create an item in Cosmos DB
 router.post('/create', async (req, res) => {
@@ -40,16 +40,50 @@ router.get('/read', async (req, res) => {
     }
 });
 
+// read item by id from Cosmos DB
+router.get('/read/:id', async (req, res) => {
+    try {
+        const database = client.database(databaseId);
+        const container = database.container(containerId);
+        const propId = req.params.id;
+
+        // Query Cosmos DB to retrieve the specific post by ID
+        const querySpec = {
+            query: 'SELECT * FROM c WHERE c.authId = @propId',
+            parameters: [{ name: '@propId', value: propId }]
+        };
+
+        const { resources: data } = await container.items.query(querySpec).fetchAll();
+
+        if (data.length === 1) {
+            return res.status(200).json(data[0]);
+        } else {
+            return res.status(404).json({ message: 'Post not found' });
+        }
+    } catch (error) {
+        console.error('Error retrieving post:', error);
+        return res.status(500).send('An error occurred while retrieving the post.');
+    }
+})
+
 // Function to update an item in Cosmos DB
 router.put('/update/:id', async (req, res) => {
     try {
         const database = client.database(databaseId);
         const container = database.container(containerId);
 
-        const updatedItem = req.body;
-        updatedItem.id = req.params.id;
+        
+        const querySpec = {
+            query: 'SELECT * FROM c WHERE c.authId = @propId',
+            parameters: [{ name: '@propId', value: req.params.id }]
+        };
+        const { resources: data } = await container.items.query(querySpec).fetchAll();
+        const updatedItem = {
+            ...data[0],
+            ...req.body
+        }
 
-        const { resource: replaced } = await container.item(req.params.id).replace(updatedItem);
+        const { resource: replaced } = await container.item(updatedItem.id).replace(updatedItem);
 
         res.json(replaced);
     } catch (error) {
@@ -63,9 +97,19 @@ router.delete('/delete/:id', async (req, res) => {
         const database = client.database(databaseId);
         const container = database.container(containerId);
 
-        await container.item(req.params.id).delete();
+        const querySpec = {
+            query: 'SELECT * FROM c WHERE c.authId = @value', // Define your condition
+            parameters: [{ name: '@value', value: req.params.id }] // Replace with your condition's value
+        };
 
-        res.json({ message: 'Item deleted' });
+        const { resources: itemsToDelete } = await container.items.query(querySpec).fetchAll();
+        
+        // Iterate through the items that match the query and delete them
+        for (const item of itemsToDelete) {
+            await container.item(item.id).delete();
+        }
+
+        res.json({ message: 'Items deleted' });
     } catch (error) {
         res.status(500).send(error);
     }

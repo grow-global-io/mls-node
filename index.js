@@ -18,9 +18,7 @@ const pdfRoute = require("./routes/pdf");
 // dotenv confi
 require("dotenv").config();
 app.use(express.json());
-app.get("/callback", (req, res) => {
-  res.send("hello");
-});
+
 
 app.get("/verify", verifyToken, (req, res) => {
   successResponse(res, { authId: req.authId }, "success");

@@ -25,20 +25,6 @@ const getUserInfoMiddleware = (req, res, next) => {
       console.error("Error fetching user info:", error);
       return res.status(401).json({ message: "Unauthorized - Invalid token" });
     });
-  // axios
-  //   .get("https://dev-ngu25l76.us.auth0.com/userinfo", {
-  //     headers: {
-  //       Authorization: `Bearer ${accessToken}`,
-  //     },
-  //   })
-  //   .then((response) => {
-  //     req.user = response.data; // Attach user info to the request object
-  //     next(); // Continue to the next middleware or route handler
-  //   })
-  //   .catch((error) => {
-  //     console.error("Error fetching user info:", error);
-  //     return res.status(401).json({ message: "Unauthorized - Invalid token" });
-  //   });
 };
 
 const getManagementApiToken = async (req, res, next) => {
