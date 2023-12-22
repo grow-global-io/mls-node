@@ -18,7 +18,7 @@ const pdfRoute = require("./routes/pdf");
 // dotenv confi
 require("dotenv").config();
 app.use(express.json());
-
+const port = process.env.PORT || 3000;
 
 app.get("/verify", verifyToken, (req, res) => {
   successResponse(res, { authId: req.authId }, "success");
@@ -41,4 +41,4 @@ app.use("/matching", verifyToken, matchingRoute);
 app.use('/authenticate', getManagementApiToken, authenticateRoute)
 app.use('/profile', verifyToken, profile)
 app.use('/user', userRoute)
-app.listen(process.env.PORT, () => console.log("Server listening on port 8000!"));
+app.listen(port, () => console.log("Server listening on port 8000!"));
