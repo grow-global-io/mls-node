@@ -41,4 +41,4 @@ app.use("/matching", verifyToken, matchingRoute);
 app.use('/authenticate', getManagementApiToken, authenticateRoute)
 app.use('/profile', verifyToken, profile)
 app.use('/user', userRoute)
-app.listen(8000, () => console.log("Server listening on port 8000!"));
+app.listen(process.env.PORT, () => console.log("Server listening on port 8000!"));
