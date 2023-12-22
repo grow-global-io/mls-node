@@ -23,6 +23,9 @@ app.use(express.json());
 app.get("/verify", verifyToken, (req, res) => {
   successResponse(res, { authId: req.authId }, "success");
 });
+app.get("/",(req,res)=>{
+  res.send("Hello world!")
+})
 app.get("/userDetails", verifyToken, getUserInfoMiddleware, (req, res) => {
   successResponse(res, req.user, "success");
 });
