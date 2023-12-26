@@ -11,14 +11,16 @@ const propertyRoute = require("./routes/properties");
 const matchingRoute = require("./routes/matching");
 const requirementRoute = require("./routes/requirements");
 const authenticateRoute = require("./routes/authentication");
+const profile = require("./routes/profile");
 const userRoute = require("./routes/user");
+const pdfRoute = require("./routes/pdf");
+const videoRoute = require("./routes/video");
+const viewingsRoute = require("./routes/viewings");
 
 // dotenv confi
 require("dotenv").config();
 app.use(express.json());
-app.get("/callback", (req, res) => {
-  res.send("hello");
-});
+
 
 app.get("/verify", verifyToken, (req, res) => {
   successResponse(res, { authId: req.authId }, "success");
@@ -26,14 +28,21 @@ app.get("/verify", verifyToken, (req, res) => {
 app.get("/userDetails", verifyToken, getUserInfoMiddleware, (req, res) => {
   successResponse(res, req.user, "success");
 });
-app.use("/auth", authRoute);
-app.use("/agent", agentRoute);
-app.use("/developer", developerRoute);
-app.use("/image", imageRoute);
-app.use("/listing", listingRoute);
-app.use("/property", propertyRoute);
-app.use("/requirement", requirementRoute);
-app.use("/matching", matchingRoute);
+app.get("/",(req,res)=>{
+  res.send("Hello world!")
+})
+app.use("/auth", verifyToken, authRoute);
+app.use("/agent", verifyToken, agentRoute);
+app.use("/developer", verifyToken, developerRoute);
+app.use("/image", verifyToken, imageRoute);
+app.use("/pdf", verifyToken, pdfRoute);
+app.use("/video", verifyToken, videoRoute);
+app.use("/listing", verifyToken, listingRoute);
+app.use("/property", verifyToken, propertyRoute);
+app.use("/requirement", verifyToken, requirementRoute);
+app.use("/matching", verifyToken, matchingRoute);
+app.use("/viewings", verifyToken, viewingsRoute);
 app.use('/authenticate', getManagementApiToken, authenticateRoute)
+app.use('/profile', verifyToken, profile)
 app.use('/user', userRoute)
 app.listen(8000, () => console.log("Server listening on port 8000!"));
