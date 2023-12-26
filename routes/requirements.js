@@ -17,7 +17,7 @@ router.post('/create', async (req, res) => {
         const database = client.database(databaseId);
         const container = database.container(containerId);
 
-        const newItem = req.body;
+        const newItem = { ...req.body, createdAt: new Date().toISOString() };
         const { resource: createdItem } = await container.items.create(newItem);
 
         res.json(createdItem);

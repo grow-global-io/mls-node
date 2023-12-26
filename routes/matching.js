@@ -47,9 +47,9 @@ const databaseId = process.env.database_id;
 //     }
 // });
 
-Router.post('/filterData', async (req, res) => {
+Router.post('/filterData/:container', async (req, res) => {
     try {
-        const containerId = 'listings';
+        const containerId = req.params.container;
         const database = client.database(databaseId);
         const container = database.container(containerId);
         const { lat, long, id, propertyName, userType, beds, baths, reception, size, askingPrice, referralFeeType, referralFee } = req.body;
@@ -73,7 +73,6 @@ Router.post('/filterData', async (req, res) => {
             ;
             console.log(beds && dataBeds && dataBeds === beds)
             return (
-                distance <= 100 &&
                 (beds && dataBeds && dataBeds === beds) &&
                 (baths && dataBaths && dataBaths === baths)
             );
