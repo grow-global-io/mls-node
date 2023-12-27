@@ -31,9 +31,21 @@ router.get('/read', async (req, res) => {
     try {
         const database = client.database(databaseId);
         const container = database.container(containerId);
-
+        const requirements = database.container('requirements');
         const { resources: items } = await container.items.readAll().fetchAll();
-
+        const { resources: reqs } = await requirements.items.readAll().fetchAll();
+        items.forEach(itemA => {
+            let matchesCount = reqs.filter(itemB =>
+                itemA.size === parseInt(itemB.size) ||
+                itemA.askingPrice >= parseInt(itemB.minPriceRange) &&
+                itemA.askingPrice <= parseInt(itemB.maxPriceRange) ||
+                itemA.propertyType === itemB.propertyType ||
+                itemA.propertySubType === itemB.propertySubType
+            );
+            itemA.matches = matchesCount;
+            itemA.matchesCount = matchesCount.length;
+        });
+        items.sort((a, b) => b.matchesCount - a.matchesCount);
         res.json(items);
     } catch (error) {
         res.status(500).send(error);
