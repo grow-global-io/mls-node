@@ -16,6 +16,7 @@ const userRoute = require("./routes/user");
 const pdfRoute = require("./routes/pdf");
 const videoRoute = require("./routes/video");
 const viewingsRoute = require("./routes/viewings");
+const offersRoute = require("./routes/offers");
 
 // dotenv confi
 require("dotenv").config();
@@ -43,6 +44,7 @@ app.use("/property", verifyToken, propertyRoute);
 app.use("/requirement", verifyToken, requirementRoute);
 app.use("/matching", verifyToken, matchingRoute);
 app.use("/viewings", verifyToken, viewingsRoute);
+app.use("/offers", verifyToken, offersRoute);
 app.use('/authenticate', getManagementApiToken, authenticateRoute)
 app.use('/profile', verifyToken, profile)
 app.use('/user', userRoute)

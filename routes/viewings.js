@@ -1,6 +1,7 @@
 const router = require("express").Router();
 const { CosmosClient } = require('@azure/cosmos');
 require("dotenv").config();
+const { viewingsSchema } = require("../constants/Schemas");
 
 // Cosmos DB setup
 const endpoint = process.env.endpoint;
@@ -17,10 +18,43 @@ router.post('/create', async (req, res) => {
         const database = client.database(databaseId);
         const container = database.container(containerId);
 
-        const newItem = req.body;
+        const {error,value:newItem} = viewingsSchema.validate(req.body);
+        if (error) {
+            return res.status(400).json(error);
+        }
         const { resource: createdItem } = await container.items.create(newItem);
 
         res.json(createdItem);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+});
+router.get('/receive/read/:authId', async (req, res) => {
+    try {
+        const database = client.database(databaseId);
+        const container = database.container(containerId);
+        const properties = database.container('properties');
+        const { resources: items } = await container.items.query(`SELECT * FROM c WHERE c.agentAuthId = "${req.params.authId}"`).fetchAll();
+        await items.forEach(async(itemA) => {
+            const { resources: props } = await properties.items.query(`SELECT * FROM c WHERE c.authId = "${req.params.authId}" AND c.id="${itemA.propertyId}"`).fetchAll();
+            itemA.property = props;
+        });
+        res.json(items);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+});
+router.get('/send/read/:authId', async (req, res) => {
+    try {
+        const database = client.database(databaseId);
+        const container = database.container(containerId);
+        const properties = database.container('properties');
+        const { resources: items } = await container.items.query(`SELECT * FROM c WHERE c.authId = "${req.params.authId}"`).fetchAll();
+        await items.forEach(async(itemA) => {
+            const { resources: props } = await properties.items.query(`SELECT * FROM c WHERE c.authId = "${req.params.authId}" AND c.id="${itemA.propertyId}"`).fetchAll();
+            itemA.property = props;
+        });
+        res.json(items);
     } catch (error) {
         res.status(500).send(error);
     }
