@@ -1,6 +1,7 @@
 const router = require("express").Router();
 const { CosmosClient } = require('@azure/cosmos');
 require("dotenv").config();
+const { requirementsSchema } = require("../constants/Schemas");
 
 // Cosmos DB setup
 const endpoint = process.env.endpoint;
@@ -17,7 +18,10 @@ router.post('/create', async (req, res) => {
         const database = client.database(databaseId);
         const container = database.container(containerId);
 
-        const newItem = { ...req.body, createdAt: new Date().toISOString() };
+        const {error,value:newItem} = requirementsSchema.validate({ ...req.body, createdAt: new Date().toISOString() });
+        if  (error) {
+            return res.status(400).json(error);
+        }
         const { resource: createdItem } = await container.items.create(newItem);
 
         res.json(createdItem);

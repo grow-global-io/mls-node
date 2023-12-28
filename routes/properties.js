@@ -1,6 +1,7 @@
 const router = require("express").Router();
 const { CosmosClient } = require('@azure/cosmos');
 require("dotenv").config();
+const { propertySchema } = require("../constants/Schemas");
 
 // Cosmos DB setup
 const endpoint = process.env.endpoint;
@@ -17,8 +18,11 @@ router.post('/create', async (req, res) => {
         const database = client.database(databaseId);
         const container = database.container(containerId);
 
-        const newItem = req.body;
-        const { resource: createdItem } = await container.items.create(newItem);
+        const { error, value: validatedItem } = propertySchema.validate(req.body);
+        if (error) {
+            return res.status(400).json(error);
+        }
+        const { resource: createdItem } = await container.items.create(validatedItem);
 
         res.json(createdItem);
     } catch (error) {
@@ -37,8 +41,8 @@ router.get('/read', async (req, res) => {
         items.forEach(itemA => {
             let matchesCount = reqs.filter(itemB =>
                 itemA.size === parseInt(itemB.size) ||
-                itemA.askingPrice >= parseInt(itemB.minPriceRange) &&
-                itemA.askingPrice <= parseInt(itemB.maxPriceRange) ||
+                itemA.price >= parseInt(itemB.minPriceRange) &&
+                itemA.price <= parseInt(itemB.maxPriceRange) ||
                 itemA.propertyType === itemB.propertyType ||
                 itemA.propertySubType === itemB.propertySubType
             );
