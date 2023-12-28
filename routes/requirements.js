@@ -43,6 +43,19 @@ router.get('/read', async (req, res) => {
         res.status(500).send(error);
     }
 });
+// Function to read items by authId from Cosmos DB
+router.get('/read/:authId', async (req, res) => {
+    try {
+        const database = client.database(databaseId);
+        const container = database.container(containerId);
+
+        const { resources: items } = await container.items.query(`SELECT * FROM c WHERE c.authId = "${req.params.authId}"`).fetchAll();
+
+        res.json(items);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+});
 
 // Function to update an item in Cosmos DB
 router.put('/update/:id', async (req, res) => {
