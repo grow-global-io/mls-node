@@ -33,10 +33,14 @@ const propertySchema = Joi.object({
   tags: Joi.array().items(Joi.string()).required(),
   planType: Joi.string().required(),
   authId: Joi.string().required(),
+  lat: Joi.number().required(),
+  lng: Joi.number().required(),
 });
 const requirementsSchema = Joi.object({
   category: Joi.string().required(),
   location: Joi.string().allow("").optional(),
+  lat: Joi.number().required(),
+  lng: Joi.number().required(),
   radius: Joi.string().allow("").optional(),
   propertyType: Joi.string().required(),
   propertySubType: Joi.string().required(),
@@ -68,4 +72,4 @@ const viewingsSchema = Joi.object({
   agentAuthId: Joi.string().required(),
   propertyId: Joi.string().required(),
 });
-module.exports = { propertySchema, requirementsSchema, offersSchema,viewingsSchema };
+module.exports = { propertySchema, requirementsSchema, offersSchema, viewingsSchema };
