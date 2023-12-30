@@ -162,7 +162,7 @@ router.get("/read/:authId", async (req, res) => {
             itemB.lat,
             itemB.lng
           );
-          const withinRadius = distance <= itemB.radius;
+          const withinRadius = distance <= itemB.Radius;
           const matches =
             itemA.size === parseInt(itemB.size) ||
             (itemA.price >= parseInt(itemB.minPriceRange) &&
