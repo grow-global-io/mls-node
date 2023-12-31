@@ -96,10 +96,9 @@ router.get("/read", async (req, res) => {
     const { resources: reqs } = await requirements.items
       .query(`SELECT * FROM c WHERE c.authId = "${req.authId}"`)
       .fetchAll();
-
     // Map each itemA to a Promise that resolves when filtering is done
     const matchesPromises = items.map(async (itemA) => {
-      const matchesCount = await Promise.all(
+      const matchesDistances = await Promise.all(
         reqs.map(async (itemB) => {
           const distance = await calculateDistance(
             itemA.lat,
@@ -107,20 +106,21 @@ router.get("/read", async (req, res) => {
             itemB.lat,
             itemB.lng
           );
-          const withinRadius = distance <= itemB.radius;
+          const withinRadius = distance <= itemB.Radius;
           const matches =
             itemA.size === parseInt(itemB.size) ||
             (itemA.price >= parseInt(itemB.minPriceRange) &&
               itemA.price <= parseInt(itemB.maxPriceRange)) ||
             itemA.propertyType === itemB.propertyType ||
             itemA.propertySubType === itemB.propertySubType;
-
-          return withinRadius && matches;
+      
+          return (withinRadius && matches) ? itemB : null;
         })
       );
+      
 
       // Filter the matches to retain only the valid matches
-      const validMatches = matchesCount.filter(Boolean);
+      const validMatches = matchesDistances.filter(item => item !== null)
 
       itemA.matches = validMatches;
       itemA.matchesCount = validMatches.length;
@@ -219,10 +219,42 @@ router.delete("/delete/:id", async (req, res) => {
   try {
     const database = client.database(databaseId);
     const container = database.container(containerId);
-
-    await container.item(req.params.id).delete();
+    const querySpec = {
+      query: 'SELECT * FROM c WHERE c.id = @itemId',
+      parameters: [
+        {
+          name: '@itemId',
+          value: req.params.id
+        }
+      ]
+    };
+    const { resources: items } = await container.items.query(querySpec).fetchAll();
+    if (items.length === 0) {
+      return res.status(404).json({ message: 'Item not found' });
+    }
+    await container.item(req.params.id, req.params.id).delete();
 
     res.json({ message: "Item deleted" });
+  } catch (error) {
+    res.status(500).send(error);
+  }
+});
+router.delete("/deleteAll", async (req, res) => {
+  try {
+    const database = client.database(databaseId);
+    const container = database.container(containerId);
+    const { resources: items } = await container.items.readAll().fetchAll();
+
+    if (items.length === 0) {
+      return res.status(404).json({ message: 'No items found in the container' });
+    }
+
+    // Delete all items in the container
+    for (const item of items) {
+      await container.item(item.id, item.id).delete();
+    }
+
+    res.json({ message: "All items deleted from the container" });
   } catch (error) {
     res.status(500).send(error);
   }

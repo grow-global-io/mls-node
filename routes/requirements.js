@@ -87,5 +87,25 @@ router.delete('/delete/:id', async (req, res) => {
         res.status(500).send(error);
     }
 });
+router.delete("/deleteAll", async (req, res) => {
+    try {
+      const database = client.database(databaseId);
+      const container = database.container(containerId);
+      const { resources: items } = await container.items.readAll().fetchAll();
+  
+      if (items.length === 0) {
+        return res.status(404).json({ message: 'No items found in the container' });
+      }
+  
+      // Delete all items in the container
+      for (const item of items) {
+        await container.item(item.id, item.id).delete();
+      }
+  
+      res.json({ message: "All items deleted from the container" });
+    } catch (error) {
+      res.status(500).send(error);
+    }
+  });
 
 module.exports = router
