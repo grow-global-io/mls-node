@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const { CosmosClient } = require('@azure/cosmos');
+const { CosmosClient } = require("@azure/cosmos");
 require("dotenv").config();
 const { viewingsSchema } = require("../constants/Schemas");
 
@@ -10,69 +10,101 @@ const client = new CosmosClient({ endpoint, key });
 
 // Cosmos DB configuration
 const databaseId = process.env.database_id;
-const containerId = 'notifications';
+const containerId = "notifications";
 
 // Function to create an item in Cosmos DB
-router.post('/create', async (req, res) => {
-    try {
-        const database = client.database(databaseId);
-        const container = database.container(containerId);
+router.post("/create", async (req, res) => {
+  try {
+    const database = client.database(databaseId);
+    const container = database.container(containerId);
 
-        const { error, value: newItem } = viewingsSchema.validate(req.body);
-        if (error) {
-            return res.status(400).json(error);
-        }
-        const { resource: createdItem } = await container.items.create(newItem);
-
-        res.json(createdItem);
-    } catch (error) {
-        res.status(500).send(error);
+    const { error, value: newItem } = viewingsSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json(error);
     }
+    const { resource: createdItem } = await container.items.create(newItem);
+
+    res.json(createdItem);
+  } catch (error) {
+    res.status(500).send(error);
+  }
 });
 
 // Function to read items from Cosmos DB
-router.get('/read', async (req, res) => {
-    try {
-        const database = client.database(databaseId);
-        const container = database.container(containerId);
+router.get("/read", async (req, res) => {
+  try {
+    const database = client.database(databaseId);
+    const container = database.container(containerId);
 
-        const { resources: items } = await container.items.readAll().fetchAll();
+    const { resources: items } = await container.items.readAll().fetchAll();
 
-        res.json(items);
-    } catch (error) {
-        res.status(500).send(error);
-    }
+    res.json(items);
+  } catch (error) {
+    res.status(500).send(error);
+  }
 });
+// Function to read items from Cosmos DB
+router.get("/read/:authId", async (req, res) => {
+  try {
+    const database = client.database(databaseId);
+    const container = database.container(containerId);
+
+    const { resources: items } = await container.items
+      .query(`SELECT * FROM c WHERE c.authId = "${req.params.authId}"`)
+      .fetchAll();
+
+    res.json(items);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+});
+// Function to read items from Cosmos DB
+router.get("/read/:agentAuthId", async (req, res) => {
+    try {
+      const database = client.database(databaseId);
+      const container = database.container(containerId);
+  
+      const { resources: items } = await container.items
+        .query(`SELECT * FROM c WHERE c.agentAuthId = "${req.params.agentAuthId}"`)
+        .fetchAll();
+  
+      res.json(items);
+    } catch (error) {
+      res.status(500).send(error);
+    }
+  });
 
 // Function to update an item in Cosmos DB
-router.put('/update/:id', async (req, res) => {
-    try {
-        const database = client.database(databaseId);
-        const container = database.container(containerId);
+router.put("/update/:id", async (req, res) => {
+  try {
+    const database = client.database(databaseId);
+    const container = database.container(containerId);
 
-        const updatedItem = req.body;
-        updatedItem.id = req.params.id;
+    const updatedItem = req.body;
+    updatedItem.id = req.params.id;
 
-        const { resource: replaced } = await container.item(req.params.id).replace(updatedItem);
+    const { resource: replaced } = await container
+      .item(req.params.id)
+      .replace(updatedItem);
 
-        res.json(replaced);
-    } catch (error) {
-        res.status(500).send(error);
-    }
+    res.json(replaced);
+  } catch (error) {
+    res.status(500).send(error);
+  }
 });
 
 // Function to delete an item from Cosmos DB
-router.delete('/delete/:id', async (req, res) => {
-    try {
-        const database = client.database(databaseId);
-        const container = database.container(containerId);
+router.delete("/delete/:id", async (req, res) => {
+  try {
+    const database = client.database(databaseId);
+    const container = database.container(containerId);
 
-        await container.item(req.params.id).delete();
+    await container.item(req.params.id).delete();
 
-        res.json({ message: 'Item deleted' });
-    } catch (error) {
-        res.status(500).send(error);
-    }
+    res.json({ message: "Item deleted" });
+  } catch (error) {
+    res.status(500).send(error);
+  }
 });
 
-module.exports = router
+module.exports = router;
