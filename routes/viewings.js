@@ -22,6 +22,22 @@ router.post("/create", async (req, res) => {
     if (error) {
       return res.status(400).json(error);
     }
+    // properties details get 
+    const propertiesContainer = database.container("properties");
+    const { resources: items } = await propertiesContainer.items
+      .query(`SELECT * FROM c WHERE c.id = "${newItem.propertyId}"`)
+      .fetchAll();
+
+    const notificationContainer = database.container("notifications");
+    await notificationContainer.items.create({
+      authId: newItem.authId,
+      message: `You have a viewing on ${newItem.date} at ${newItem.slot} for ${items[0].PropertyName}`,
+      type: "viewing",
+      createdAt: new Date().toISOString(),
+      isRead: false,
+      propertyId: newItem.propertyId,
+      agentAuthId: newItem.agentAuthId,
+    });
     const { resource: createdItem } = await container.items.create(newItem);
 
     res.json(createdItem);
