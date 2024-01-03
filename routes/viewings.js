@@ -2,7 +2,7 @@ const router = require("express").Router();
 const { CosmosClient } = require("@azure/cosmos");
 require("dotenv").config();
 const { viewingsSchema } = require("../constants/Schemas");
-
+const moment = require('moment');
 // Cosmos DB setup
 const endpoint = process.env.endpoint;
 const key = process.env.key;
@@ -31,7 +31,7 @@ router.post("/create", async (req, res) => {
     const notificationContainer = database.container("notifications");
     await notificationContainer.items.create({
       authId: newItem.authId,
-      message: `You have a viewing on ${newItem.date} at ${newItem.slot} for ${items[0].PropertyName}`,
+      message: `You have a viewing on ${moment(newItem.date).format('MM/DD/YYYY')} at ${newItem.slot} for ${items[0].PropertyName}`,
       type: "viewing",
       createdAt: new Date().toISOString(),
       isRead: false,

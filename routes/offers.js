@@ -2,6 +2,7 @@ const router = require("express").Router();
 const { CosmosClient } = require("@azure/cosmos");
 require("dotenv").config();
 const { offersSchema } = require("../constants/Schemas");
+const moment = require('moment');
 // Cosmos DB setup
 const endpoint = process.env.endpoint;
 const key = process.env.key;
@@ -31,7 +32,7 @@ router.post("/create", async (req, res) => {
     await notificationContainer.items.create({
       authId: newItem.authId,
       message: `You have an offer on ${items[0].PropertyName} for ${newItem.offerPrice}`,
-      type: "viewing",
+      type: "offer",
       createdAt: new Date().toISOString(),
       isRead: false,
       propertyId: newItem.propertyId,
