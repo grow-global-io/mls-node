@@ -59,7 +59,7 @@ router.get("/read/:authId", async (req, res) => {
   }
 });
 // Function to read items from Cosmos DB
-router.get("/read/:agentAuthId", async (req, res) => {
+router.get("/read/agent/:agentAuthId", async (req, res) => {
     try {
       const database = client.database(databaseId);
       const container = database.container(containerId);
