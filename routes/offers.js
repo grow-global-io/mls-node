@@ -31,7 +31,7 @@ router.post("/create", async (req, res) => {
     const notificationContainer = database.container("notifications");
     await notificationContainer.items.create({
       authId: newItem.authId,
-      message: `You have an offer on ${items[0].PropertyName} for ${newItem.offerPrice}`,
+      message: `You have an offer on ${items[0].PropertyName} for ${newItem.price}`,
       type: "offer",
       createdAt: new Date().toISOString(),
       isRead: false,
