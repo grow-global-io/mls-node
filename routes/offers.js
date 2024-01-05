@@ -3,6 +3,7 @@ const { CosmosClient } = require("@azure/cosmos");
 require("dotenv").config();
 const { offersSchema } = require("../constants/Schemas");
 const moment = require('moment');
+const { formatInternationalNumber } = require('../constants/main');
 // Cosmos DB setup
 const endpoint = process.env.endpoint;
 const key = process.env.key;
@@ -31,7 +32,7 @@ router.post("/create", async (req, res) => {
     const notificationContainer = database.container("notifications");
     await notificationContainer.items.create({
       authId: newItem.authId,
-      message: `You have an offer on ${items[0].PropertyName} for ${newItem.price}`,
+      message: `You have an offer on ${items[0].PropertyName} for ${formatInternationalNumber(newItem.price)} ${items[0].priceType === "gbp" ? "£" : "$"}`,
       type: "offer",
       createdAt: new Date().toISOString(),
       isRead: false,
@@ -89,15 +90,15 @@ router.get("/send/read/:authId", async (req, res) => {
     const { resources: items } = await container.items
       .query(`SELECT * FROM c WHERE c.authId = "${req.params.authId}"`)
       .fetchAll();
-      const promises = items.map(async (itemA) => {
-        const { resources: props } = await properties.items
-          .query(`SELECT * FROM c WHERE c.id="${itemA.propertyId}"`)
-          .fetchAll();
-        return { ...itemA, property: props[0] || null };
-      });
-  
-      const updatedItems = await Promise.all(promises);
-      res.json(updatedItems);
+    const promises = items.map(async (itemA) => {
+      const { resources: props } = await properties.items
+        .query(`SELECT * FROM c WHERE c.id="${itemA.propertyId}"`)
+        .fetchAll();
+      return { ...itemA, property: props[0] || null };
+    });
+
+    const updatedItems = await Promise.all(promises);
+    res.json(updatedItems);
   } catch (error) {
     res.status(500).send(error);
   }
@@ -128,7 +129,7 @@ router.delete("/delete/:id", async (req, res) => {
     const database = client.database(databaseId);
     const container = database.container(containerId);
 
-    await container.item(req.params.id,req.params.id).delete();
+    await container.item(req.params.id, req.params.id).delete();
 
     res.json({ message: "Item deleted" });
   } catch (error) {
