@@ -68,9 +68,25 @@ const offersSchema = Joi.object({
 const viewingsSchema = Joi.object({
   date: Joi.date().iso().required(),
   slot: Joi.string().required(),
-  notes: Joi.string().allow('').optional(),
+  notes: Joi.string().allow("").optional(),
   authId: Joi.string().required(),
   agentAuthId: Joi.string().required(),
   propertyId: Joi.string().required(),
+  status: Joi.string().required(),
 });
-module.exports = { propertySchema, requirementsSchema, offersSchema, viewingsSchema };
+const notificationSchema = Joi.object({
+  authId: Joi.string().required(),
+  message: Joi.string().required(),
+  type: Joi.string().required(),
+  createdAt: Joi.string().required(),
+  isRead: Joi.boolean().required(),
+  propertyId: Joi.string().required(),
+  agentAuthId: Joi.string().required(),
+});
+module.exports = {
+  propertySchema,
+  requirementsSchema,
+  offersSchema,
+  viewingsSchema,
+  notificationSchema,
+};
