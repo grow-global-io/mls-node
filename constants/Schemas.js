@@ -50,6 +50,7 @@ const requirementsSchema = Joi.object({
   minPriceRange: Joi.string().required(),
   maxPriceRange: Joi.string().required(),
   clientName: Joi.string().required(),
+  clientEmail: Joi.string().required(),
   keyFeature: Joi.array().items(Joi.string()).required(),
   tags: Joi.array().items(Joi.string()).required(),
   Location: Joi.string().required(),
