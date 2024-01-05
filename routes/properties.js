@@ -92,12 +92,22 @@ router.get("/read", async (req, res) => {
     const database = client.database(databaseId);
     const container = database.container(containerId);
     const requirements = database.container("requirements");
-    const { resources: items } = await container.items.readAll().fetchAll();
+    const { resources: items } = await container.items
+    .query(`SELECT * FROM c WHERE c.authId <> "${req.authId}"`)
+    .fetchAll();
     const { resources: reqs } = await requirements.items
       .query(`SELECT * FROM c WHERE c.authId = "${req.authId}"`)
       .fetchAll();
+    const viewings = database.container("viewings");
+    const offers = database.container("offers");
     // Map each itemA to a Promise that resolves when filtering is done
     const matchesPromises = items.map(async (itemA) => {
+      const { resources: viewingsItems } = await viewings.items
+        .query(`SELECT * FROM c WHERE c.propertyId = "${itemA.id}"`)
+        .fetchAll();
+      const { resources: offersItems } = await offers.items
+        .query(`SELECT * FROM c WHERE c.propertyId = "${itemA.id}"`)
+        .fetchAll();
       const matchesDistances = await Promise.all(
         reqs.map(async (itemB) => {
           const distance = await calculateDistance(
@@ -113,19 +123,21 @@ router.get("/read", async (req, res) => {
               itemA.price <= parseInt(itemB.maxPriceRange)) ||
             itemA.propertyType === itemB.propertyType ||
             itemA.propertySubType === itemB.propertySubType;
-      
-          return (withinRadius && matches) ? itemB : null;
+
+          return withinRadius && matches ? itemB : null;
         })
       );
-      
 
       // Filter the matches to retain only the valid matches
-      const validMatches = matchesDistances.filter(item => item !== null)
-
+      const validMatches = matchesDistances.filter((item) => item !== null);
+      itemA.viewings = viewingsItems;
+      itemA.viewingsCount = viewingsItems.length;
+      itemA.offers = offersItems;
+      itemA.offersCount = offersItems.length;
       itemA.matches = validMatches;
       itemA.matchesCount = validMatches.length;
 
-      return itemA;
+      return Promise.resolve(itemA);
     });
 
     // Wait for all matchesPromises to resolve
@@ -220,17 +232,19 @@ router.delete("/delete/:id", async (req, res) => {
     const database = client.database(databaseId);
     const container = database.container(containerId);
     const querySpec = {
-      query: 'SELECT * FROM c WHERE c.id = @itemId',
+      query: "SELECT * FROM c WHERE c.id = @itemId",
       parameters: [
         {
-          name: '@itemId',
-          value: req.params.id
-        }
-      ]
+          name: "@itemId",
+          value: req.params.id,
+        },
+      ],
     };
-    const { resources: items } = await container.items.query(querySpec).fetchAll();
+    const { resources: items } = await container.items
+      .query(querySpec)
+      .fetchAll();
     if (items.length === 0) {
-      return res.status(404).json({ message: 'Item not found' });
+      return res.status(404).json({ message: "Item not found" });
     }
     await container.item(req.params.id, req.params.id).delete();
 
@@ -246,7 +260,9 @@ router.delete("/deleteAll", async (req, res) => {
     const { resources: items } = await container.items.readAll().fetchAll();
 
     if (items.length === 0) {
-      return res.status(404).json({ message: 'No items found in the container' });
+      return res
+        .status(404)
+        .json({ message: "No items found in the container" });
     }
 
     // Delete all items in the container
