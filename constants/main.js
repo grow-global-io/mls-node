@@ -36,7 +36,16 @@ const calculateSimilarityScore = (data, filters) => {
 
     return score;
 };
+function formatInternationalNumber(number) {
+    // Use the Intl.NumberFormat object with the appropriate options for the desired format
+    const formattedNumber = new Intl.NumberFormat('en-US', {
+        style: 'decimal',
+        maximumFractionDigits: 2, // Customize this based on your requirements
+        minimumFractionDigits: 2,
+    }).format(number);
+
+    return formattedNumber;
+}
 
 
-
-module.exports = { calculateDistance, calculateSimilarityScore };
+module.exports = { calculateDistance, calculateSimilarityScore, formatInternationalNumber };
