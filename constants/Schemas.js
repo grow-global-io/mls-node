@@ -67,6 +67,9 @@ const offersSchema = Joi.object({
   authId: Joi.string().required(),
   agentAuthId: Joi.string().required(),
   propertyId: Joi.string().required(),
+  requirementsId: Joi.string().required(),
+  createdAt: Joi.string().required(),
+  updatedAt: Joi.string().required(),
 });
 const viewingsSchema = Joi.object({
   date: Joi.date().iso().required(),
