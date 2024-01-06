@@ -19,6 +19,7 @@ const viewingsRoute = require("./routes/viewings");
 const offersRoute = require("./routes/offers");
 const notificationRoute = require("./routes/notifications");
 
+
 // dotenv confi
 require("dotenv").config();
 app.use(express.json());
@@ -50,4 +51,5 @@ app.use('/authenticate', getManagementApiToken, authenticateRoute)
 app.use('/profile', verifyToken, profile)
 app.use('/user', userRoute)
 app.use('/notifications', verifyToken, notificationRoute)
+
 app.listen(port, () => console.log("Server listening on port 8000!"));

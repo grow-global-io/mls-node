@@ -3,6 +3,7 @@ const { CosmosClient } = require("@azure/cosmos");
 require("dotenv").config();
 const { viewingsSchema } = require("../constants/Schemas");
 const moment = require("moment");
+
 // Cosmos DB setup
 const endpoint = process.env.endpoint;
 const key = process.env.key;
