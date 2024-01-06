@@ -4,7 +4,8 @@ const propertySchema = Joi.object({
   PropertyName: Joi.string(),
   Description: Joi.string(),
   Category: Joi.string(),
-  SubCategory: Joi.string(),
+  // ṣubCategory string or null
+  subCategory: Joi.string().allow("").optional(),
   PropertyType: Joi.string(),
   PropertySubType: Joi.string(),
   PropertyTypeRadio: Joi.string(),
