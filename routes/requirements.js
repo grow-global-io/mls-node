@@ -1,6 +1,7 @@
 const router = require("express").Router();
 const { CosmosClient } = require('@azure/cosmos');
 require("dotenv").config();
+const { requirementsSchema } = require("../constants/Schemas");
 
 // Cosmos DB setup
 const endpoint = process.env.endpoint;
@@ -17,7 +18,10 @@ router.post('/create', async (req, res) => {
         const database = client.database(databaseId);
         const container = database.container(containerId);
 
-        const newItem = { ...req.body, createdAt: new Date().toISOString() };
+        const {error,value:newItem} = requirementsSchema.validate({ ...req.body, createdAt: new Date().toISOString() });
+        if  (error) {
+            return res.status(400).json(error);
+        }
         const { resource: createdItem } = await container.items.create(newItem);
 
         res.json(createdItem);
@@ -33,6 +37,19 @@ router.get('/read', async (req, res) => {
         const container = database.container(containerId);
 
         const { resources: items } = await container.items.readAll().fetchAll();
+
+        res.json(items);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+});
+// Function to read items by authId from Cosmos DB
+router.get('/read/:authId', async (req, res) => {
+    try {
+        const database = client.database(databaseId);
+        const container = database.container(containerId);
+
+        const { resources: items } = await container.items.query(`SELECT * FROM c WHERE c.authId = "${req.params.authId}"`).fetchAll();
 
         res.json(items);
     } catch (error) {
@@ -70,5 +87,25 @@ router.delete('/delete/:id', async (req, res) => {
         res.status(500).send(error);
     }
 });
+router.delete("/deleteAll", async (req, res) => {
+    try {
+      const database = client.database(databaseId);
+      const container = database.container(containerId);
+      const { resources: items } = await container.items.readAll().fetchAll();
+  
+      if (items.length === 0) {
+        return res.status(404).json({ message: 'No items found in the container' });
+      }
+  
+      // Delete all items in the container
+      for (const item of items) {
+        await container.item(item.id, item.id).delete();
+      }
+  
+      res.json({ message: "All items deleted from the container" });
+    } catch (error) {
+      res.status(500).send(error);
+    }
+  });
 
 module.exports = router

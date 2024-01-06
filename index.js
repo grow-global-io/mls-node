@@ -16,6 +16,9 @@ const userRoute = require("./routes/user");
 const pdfRoute = require("./routes/pdf");
 const videoRoute = require("./routes/video");
 const viewingsRoute = require("./routes/viewings");
+const offersRoute = require("./routes/offers");
+const notificationRoute = require("./routes/notifications");
+
 
 // dotenv confi
 require("dotenv").config();
@@ -30,7 +33,7 @@ app.get("/userDetails", verifyToken, getUserInfoMiddleware, (req, res) => {
   successResponse(res, req.user, "success");
 });
 app.get("/",(req,res)=>{
-  res.send("Hello world!")
+  res.send("Hello worlds!")
 })
 app.use("/auth", verifyToken, authRoute);
 app.use("/agent", verifyToken, agentRoute);
@@ -43,7 +46,10 @@ app.use("/property", verifyToken, propertyRoute);
 app.use("/requirement", verifyToken, requirementRoute);
 app.use("/matching", verifyToken, matchingRoute);
 app.use("/viewings", verifyToken, viewingsRoute);
+app.use("/offers", verifyToken, offersRoute);
 app.use('/authenticate', getManagementApiToken, authenticateRoute)
 app.use('/profile', verifyToken, profile)
 app.use('/user', userRoute)
+app.use('/notifications', verifyToken, notificationRoute)
+
 app.listen(port, () => console.log("Server listening on port 8000!"));

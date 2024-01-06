@@ -1,9 +1,9 @@
 const router = require("express").Router();
 const { CosmosClient } = require("@azure/cosmos");
 require("dotenv").config();
-const { viewingsSchema } = require("../constants/Schemas");
-const moment = require("moment");
-
+const { offersSchema } = require("../constants/Schemas");
+const moment = require('moment');
+const { formatInternationalNumber } = require('../constants/main');
 // Cosmos DB setup
 const endpoint = process.env.endpoint;
 const key = process.env.key;
@@ -11,7 +11,7 @@ const client = new CosmosClient({ endpoint, key });
 
 // Cosmos DB configuration
 const databaseId = process.env.database_id;
-const containerId = "viewings";
+const containerId = "offers";
 
 // Function to create an item in Cosmos DB
 router.post("/create", async (req, res) => {
@@ -19,11 +19,11 @@ router.post("/create", async (req, res) => {
     const database = client.database(databaseId);
     const container = database.container(containerId);
 
-    const { error, value: newItem } = viewingsSchema.validate(req.body);
+    const { error, value: newItem } = offersSchema.validate(req.body);
     if (error) {
       return res.status(400).json(error);
     }
-    // properties details get
+    // properties details get 
     const propertiesContainer = database.container("properties");
     const { resources: items } = await propertiesContainer.items
       .query(`SELECT * FROM c WHERE c.id = "${newItem.propertyId}"`)
@@ -32,13 +32,10 @@ router.post("/create", async (req, res) => {
     const notificationContainer = database.container("notifications");
     await notificationContainer.items.create({
       authId: newItem.authId,
-      message: `You have a viewing on ${moment(newItem.date).format(
-        "MM/DD/YYYY"
-      )} at ${newItem.slot} for ${items[0].PropertyName}`,
-      type: "viewing",
+      message: `You have an offer on ${items[0].PropertyName} for ${formatInternationalNumber(newItem.price)} ${items[0].priceType === "gbp" ? "£" : "$"}`,
+      type: "offer",
       createdAt: new Date().toISOString(),
       isRead: false,
-      status: "pending",
       propertyId: newItem.propertyId,
       agentAuthId: newItem.agentAuthId,
     });
@@ -49,12 +46,27 @@ router.post("/create", async (req, res) => {
     res.status(500).send(error);
   }
 });
+
+// Function to read items from Cosmos DB
+router.get("/read", async (req, res) => {
+  try {
+    const database = client.database(databaseId);
+    const container = database.container(containerId);
+
+    const { resources: items } = await container.items.readAll().fetchAll();
+
+    res.json(items);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+});
+// Function to read items by authId from Cosmos DB
 router.get("/receive/read/:authId", async (req, res) => {
   try {
     const database = client.database(databaseId);
     const container = database.container(containerId);
     const properties = database.container("properties");
-    var { resources: items } = await container.items
+    const { resources: items } = await container.items
       .query(`SELECT * FROM c WHERE c.agentAuthId = "${req.params.authId}"`)
       .fetchAll();
     const promises = items.map(async (itemA) => {
@@ -66,16 +78,6 @@ router.get("/receive/read/:authId", async (req, res) => {
 
     const updatedItems = await Promise.all(promises);
     res.json(updatedItems);
-    // items.forEach(async (itemA) => {
-    //   const { resources: props } = await properties.items
-    //     .query(`SELECT * FROM c WHERE c.id="${itemA.propertyId}"`)
-    //     .fetchAll();
-    //   return {
-    //     "hi":"hi"
-    //   };
-    // });
-    // console.log(items);
-    // res.json(items);
   } catch (error) {
     res.status(500).send(error);
   }
@@ -102,42 +104,6 @@ router.get("/send/read/:authId", async (req, res) => {
   }
 });
 
-// router.get("/read/property/:propertyId", async (req, res) => {
-//   try {
-//     const database = client.database(databaseId);
-//     const container = database.container(containerId);
-//     const properties = database.container("properties");
-//     const { resources: items } = await container.items
-//       .query(`SELECT * FROM c WHERE c.authId = "${req.authId}"`)
-//       .fetchAll();
-//     const promises = items.map(async (itemA) => {
-//       const { resources: props } = await properties.items
-//         .query(`SELECT * FROM c WHERE c.id="${itemA.propertyId}"`)
-//         .fetchAll();
-//       return { ...itemA, property: props[0] || null };
-//     });
-
-//     const updatedItems = await Promise.all(promises);
-//     res.json(updatedItems);
-//   } catch (error) {
-//     res.status(500).send(error);
-//   }
-// });
-
-// Function to read items from Cosmos DB
-router.get("/read", async (req, res) => {
-  try {
-    const database = client.database(databaseId);
-    const container = database.container(containerId);
-
-    const { resources: items } = await container.items.readAll().fetchAll();
-
-    res.json(items);
-  } catch (error) {
-    res.status(500).send(error);
-  }
-});
-
 // Function to update an item in Cosmos DB
 router.put("/update/:id", async (req, res) => {
   try {
@@ -148,7 +114,7 @@ router.put("/update/:id", async (req, res) => {
     updatedItem.id = req.params.id;
 
     const { resource: replaced } = await container
-      .item(req.params.id, req.params.id)
+      .item(req.params.id)
       .replace(updatedItem);
 
     res.json(replaced);
@@ -177,9 +143,7 @@ router.delete("/deleteAll", async (req, res) => {
     const { resources: items } = await container.items.readAll().fetchAll();
 
     if (items.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "No items found in the container" });
+      return res.status(404).json({ message: 'No items found in the container' });
     }
 
     // Delete all items in the container
