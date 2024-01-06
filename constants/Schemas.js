@@ -79,6 +79,9 @@ const viewingsSchema = Joi.object({
   agentAuthId: Joi.string().required(),
   propertyId: Joi.string().required(),
   status: Joi.string().required(),
+  requirementId: Joi.string().required(),
+  createdAt: Joi.string().required(),
+  updatedAt: Joi.string().required(),
 });
 const notificationSchema = Joi.object({
   authId: Joi.string().required(),

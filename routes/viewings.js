@@ -18,7 +18,11 @@ router.post("/create", async (req, res) => {
     const database = client.database(databaseId);
     const container = database.container(containerId);
 
-    const { error, value: newItem } = viewingsSchema.validate(req.body);
+    const { error, value: newItem } = viewingsSchema.validate({
+      ...req.body,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
     if (error) {
       return res.status(400).json(error);
     }
