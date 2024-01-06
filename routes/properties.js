@@ -18,7 +18,11 @@ router.post("/create", async (req, res) => {
     const database = client.database(databaseId);
     const container = database.container(containerId);
 
-    const { error, value: validatedItem } = propertySchema.validate(req.body);
+    const { error, value: validatedItem } = propertySchema.validate({
+      ...req.body,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
     if (error) {
       return res.status(400).json(error);
     }
@@ -36,8 +40,8 @@ router.get("/read/id/:id", async (req, res) => {
     const database = client.database(databaseId);
     const container = database.container(containerId);
     const { resources: items } = await container.items
-    .query(`SELECT * FROM c WHERE c.id = "${req.params.id}"`)
-    .fetchAll();
+      .query(`SELECT * FROM c WHERE c.id = "${req.params.id}"`)
+      .fetchAll();
     const filteredItems = await getFilterData(items, req.authId);
     res.json(filteredItems);
   } catch (error) {
@@ -51,8 +55,8 @@ router.get("/read", async (req, res) => {
     const database = client.database(databaseId);
     const container = database.container(containerId);
     const { resources: items } = await container.items
-    .query(`SELECT * FROM c WHERE c.authId <> "${req.authId}"`)
-    .fetchAll();
+      .query(`SELECT * FROM c WHERE c.authId <> "${req.authId}"`)
+      .fetchAll();
     const filteredItems = await getFilterData(items, req.authId);
     res.json(filteredItems);
   } catch (error) {
@@ -65,8 +69,8 @@ router.get("/read/:authId", async (req, res) => {
     const database = client.database(databaseId);
     const container = database.container(containerId);
     const { resources: items } = await container.items
-    .query(`SELECT * FROM c WHERE c.authId = "${req.params.authId}"`)
-    .fetchAll();
+      .query(`SELECT * FROM c WHERE c.authId = "${req.params.authId}"`)
+      .fetchAll();
     const filteredItems = await getFilterData(items, req.authId);
     res.json(filteredItems);
   } catch (error) {
