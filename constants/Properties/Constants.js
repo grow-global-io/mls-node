@@ -1,6 +1,6 @@
 const { CosmosClient } = require("@azure/cosmos");
 require("dotenv").config();
-const {calculateDistance} = require("../main");
+const { calculateDistance } = require("../main");
 const endpoint = process.env.endpoint;
 const key = process.env.key;
 const client = new CosmosClient({ endpoint, key });
@@ -8,7 +8,7 @@ const client = new CosmosClient({ endpoint, key });
 // Cosmos DB configuration
 const databaseId = process.env.database_id;
 
-const getFilterData = async (items,authId) => {
+const getFilterData = async (items, authId) => {
   const database = client.database(databaseId);
   const requirements = database.container("requirements");
   const { resources: reqs } = await requirements.items
@@ -64,7 +64,6 @@ const getFilterData = async (items,authId) => {
   matchedItems.sort((a, b) => b.matchesCount - a.matchesCount);
   return matchedItems;
 };
-
 module.exports = {
   getFilterData,
 };

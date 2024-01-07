@@ -93,6 +93,58 @@ router.get("/read/:authId", async (req, res) => {
     res.status(500).send(error);
   }
 });
+router.post("/read/search", async (req, res) => {
+  try {
+    const {
+      beds,
+      baths,
+      reception,
+      Category,
+      location,
+      Radius,
+      PropertyType,
+      PropertySubType,
+      size,
+      priceRange,
+      keyFeature,
+      tags,
+      lat,
+      lng,
+    } = req.body;
+    const database = client.database(databaseId);
+    const container = database.container(containerId);
+    const { resources: items } = await container.items
+      .query(`SELECT * FROM c WHERE c.authId <> "${req.authId}"`)
+      .fetchAll();
+    const filteredProperties = items.filter((item) => {
+      return (
+        (beds ? item.beds === beds : true) &&
+        (baths ? item.baths === baths : true) &&
+        (reception ? item.reception === reception : true) &&
+        (Category ? item.Category === Category : true) &&
+        (location ? item.location === location : true) &&
+        (Radius ? item.Radius === Radius : true) &&
+        (PropertyType ? item.PropertyType === PropertyType : true) &&
+        (PropertySubType ? item.PropertySubType === PropertySubType : true) &&
+        (size ? item.size === size : true) &&
+        (priceRange
+          ? item.price >= priceRange[0] && item.price <= priceRange[1]
+          : true) &&
+        (keyFeature ? item.keyFeature === keyFeature : true) &&
+        (tags ? item.tags === tags : true) &&
+        (lat && lng
+          ? calculateDistance(lat, lng, item.lat, item.lng) <= Radius
+          : true)
+      );
+    });
+    console.log(filteredProperties);
+
+    const filteredItems = await getFilterData(filteredProperties, req.authId);
+    res.json(filteredItems);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+});
 
 // Function to update an item in Cosmos DB
 router.put("/update/:id", async (req, res) => {
