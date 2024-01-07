@@ -63,6 +63,22 @@ router.get("/read", async (req, res) => {
     res.status(500).send(error);
   }
 });
+router.get("/read/highRefferalFee", async (req, res) => {
+  try {
+    const database = client.database(databaseId);
+    const container = database.container(containerId);
+    const { resources: items } = await container.items
+      .query(`SELECT * FROM c WHERE c.authId <> "${req.authId}"`)
+      .fetchAll();
+    const filteredItems = await getFilterData(items, req.authId);
+    const sortedItems = filteredItems.sort((a, b) => {
+      return b.referalFee - a.referalFee;
+    });
+    res.json(sortedItems);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+});
 // Function to read items by authId from Cosmos DB
 router.get("/read/:authId", async (req, res) => {
   try {
