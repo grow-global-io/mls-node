@@ -21,6 +21,7 @@ router.post("/create", async (req, res) => {
 
     const { error, value: newItem } = offersSchema.validate({
       ...req.body,
+      status: "pending",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     });
