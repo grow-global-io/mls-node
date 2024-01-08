@@ -62,24 +62,32 @@ router.post("/read", async (req, res) => {
     } = req.body;
     const database = client.database(databaseId);
     const container = database.container(containerId);
+    let itemsquery;
     if (
-      category &&
-      propertyType &&
-      propertySubType &&
-      minRefferalFee &&
-      maxRefferalFee
+      category !== "" ||
+      propertyType !== "" ||
+      propertySubType !== "" ||
+      minRefferalFee !== "" ||
+      maxRefferalFee !== "" ||
+      category !== undefined ||
+      propertyType !== undefined ||
+      propertySubType !== undefined ||
+      minRefferalFee !== undefined ||
+      maxRefferalFee !== undefined
     ) {
       const { resources: items } = await container.items
         .query(
-          `SELECT * FROM c WHERE c.authId <> "${req.authId}" AND c.Category = "${category}" AND c.PropertyType = "${propertyType}" AND c.PropertySubType = "${propertySubType}"`
+          `SELECT * FROM c WHERE c.authId <> "${req.authId}" AND c.Category = "${category}" OR c.PropertyType = "${propertyType}" OR c.PropertySubType = "${propertySubType}"`
         )
         .fetchAll();
+      itemsquery = items;
     } else {
       const { resources: items } = await container.items
         .query(`SELECT * FROM c WHERE c.authId <> "${req.authId}"`)
         .fetchAll();
+      itemsquery = items;
     }
-    const filteredItems = await getFilterData(items, req.authId);
+    const filteredItems = await getFilterData(itemsquery, req.authId);
     res.json(filteredItems);
   } catch (error) {
     res.status(500).send(error);
