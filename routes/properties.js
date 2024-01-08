@@ -64,16 +64,11 @@ router.post("/read", async (req, res) => {
     const container = database.container(containerId);
     let itemsquery;
     if (
-      category !== "" ||
-      propertyType !== "" ||
-      propertySubType !== "" ||
-      minRefferalFee !== "" ||
-      maxRefferalFee !== "" ||
-      category !== undefined ||
-      propertyType !== undefined ||
-      propertySubType !== undefined ||
-      minRefferalFee !== undefined ||
-      maxRefferalFee !== undefined
+      category ||
+      propertyType ||
+      propertySubType ||
+      minRefferalFee ||
+      maxRefferalFee
     ) {
       const { resources: items } = await container.items
         .query(
