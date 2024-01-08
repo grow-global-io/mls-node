@@ -2,8 +2,8 @@ const router = require("express").Router();
 const { CosmosClient } = require("@azure/cosmos");
 require("dotenv").config();
 const { offersSchema } = require("../constants/Schemas");
-const moment = require('moment');
-const { formatInternationalNumber } = require('../constants/main');
+const moment = require("moment");
+const { formatInternationalNumber } = require("../constants/main");
 // Cosmos DB setup
 const endpoint = process.env.endpoint;
 const key = process.env.key;
@@ -28,7 +28,7 @@ router.post("/create", async (req, res) => {
     if (error) {
       return res.status(400).json(error);
     }
-    // properties details get 
+    // properties details get
     const propertiesContainer = database.container("properties");
     const { resources: items } = await propertiesContainer.items
       .query(`SELECT * FROM c WHERE c.id = "${newItem.propertyId}"`)
@@ -37,7 +37,11 @@ router.post("/create", async (req, res) => {
     const notificationContainer = database.container("notifications");
     await notificationContainer.items.create({
       authId: newItem.authId,
-      message: `You have an offer on ${items[0].PropertyName} for ${formatInternationalNumber(newItem.price)} ${items[0].priceType === "gbp" ? "£" : "$"}`,
+      message: `You have an offer on ${
+        items[0].PropertyName
+      } for ${formatInternationalNumber(newItem.price)} ${
+        items[0].priceType === "gbp" ? "£" : "$"
+      }`,
       type: "offer",
       createdAt: new Date().toISOString(),
       isRead: false,
@@ -115,9 +119,14 @@ router.put("/update/:id", async (req, res) => {
     const database = client.database(databaseId);
     const container = database.container(containerId);
 
-    const updatedItem = req.body;
-    updatedItem.id = req.params.id;
-
+    const { status } = req.body;
+    const { resource: item } = await container
+      .item(req.params.id, req.params.id)
+      .read();
+    const updatedItem = {
+      ...item,
+      status,
+    };
     const { resource: replaced } = await container
       .item(req.params.id)
       .replace(updatedItem);
@@ -148,7 +157,9 @@ router.delete("/deleteAll", async (req, res) => {
     const { resources: items } = await container.items.readAll().fetchAll();
 
     if (items.length === 0) {
-      return res.status(404).json({ message: 'No items found in the container' });
+      return res
+        .status(404)
+        .json({ message: "No items found in the container" });
     }
 
     // Delete all items in the container
