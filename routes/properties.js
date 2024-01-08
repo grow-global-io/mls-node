@@ -3,6 +3,7 @@ const { CosmosClient } = require("@azure/cosmos");
 require("dotenv").config();
 const { propertySchema } = require("../constants/Schemas");
 const { getFilterData } = require("../constants/Properties/Constants");
+const {calculatePercentageOfNumber} = require("../constants/main");
 // Cosmos DB setup
 const endpoint = process.env.endpoint;
 const key = process.env.key;
@@ -50,12 +51,19 @@ router.get("/read/id/:id", async (req, res) => {
 });
 
 // Function to read items from Cosmos DB
-router.get("/read", async (req, res) => {
+router.post("/read", async (req, res) => {
   try {
+    const {
+      category,
+      propertyType,
+      propertySubType,
+      minRefferalFee,
+      maxRefferalFee,
+    } = req.body;
     const database = client.database(databaseId);
     const container = database.container(containerId);
     const { resources: items } = await container.items
-      .query(`SELECT * FROM c WHERE c.authId <> "${req.authId}"`)
+      .query(`SELECT * FROM c WHERE c.authId <> "${req.authId}" AND c.Category = "${category}" AND c.PropertyType = "${propertyType}" AND c.PropertySubType = "${propertySubType}"`)
       .fetchAll();
     const filteredItems = await getFilterData(items, req.authId);
     res.json(filteredItems);
