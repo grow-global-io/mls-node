@@ -3,7 +3,7 @@ const { CosmosClient } = require("@azure/cosmos");
 require("dotenv").config();
 const { propertySchema } = require("../constants/Schemas");
 const { getFilterData } = require("../constants/Properties/Constants");
-const {calculatePercentageOfNumber} = require("../constants/main");
+const { calculatePercentageOfNumber } = require("../constants/main");
 // Cosmos DB setup
 const endpoint = process.env.endpoint;
 const key = process.env.key;
@@ -62,9 +62,23 @@ router.post("/read", async (req, res) => {
     } = req.body;
     const database = client.database(databaseId);
     const container = database.container(containerId);
-    const { resources: items } = await container.items
-      .query(`SELECT * FROM c WHERE c.authId <> "${req.authId}" AND c.Category = "${category}" AND c.PropertyType = "${propertyType}" AND c.PropertySubType = "${propertySubType}"`)
-      .fetchAll();
+    if (
+      category &&
+      propertyType &&
+      propertySubType &&
+      minRefferalFee &&
+      maxRefferalFee
+    ) {
+      const { resources: items } = await container.items
+        .query(
+          `SELECT * FROM c WHERE c.authId <> "${req.authId}" AND c.Category = "${category}" AND c.PropertyType = "${propertyType}" AND c.PropertySubType = "${propertySubType}"`
+        )
+        .fetchAll();
+    } else {
+      const { resources: items } = await container.items
+        .query(`SELECT * FROM c WHERE c.authId <> "${req.authId}"`)
+        .fetchAll();
+    }
     const filteredItems = await getFilterData(items, req.authId);
     res.json(filteredItems);
   } catch (error) {
